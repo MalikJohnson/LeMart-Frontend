@@ -1,0 +1,62 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/">
+      <img src="assets/img/logo.png" alt="Le Mart Logo" height="30" class="d-inline-block align-top me-2">
+      Le Mart
+    </a>
+    
+    <button class="navbar-toggler" type="button" (click)="isCollapsed = !isCollapsed" 
+            [attr.aria-expanded]="!isCollapsed" aria-controls="navbarContent" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" [ngbCollapse]="isCollapsed" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/products" routerLinkActive="active">Products</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/coupons" routerLinkActive="active">Coupons</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/admin" routerLinkActive="active">Admin</a>
+        </li>
+      </ul>
+      
+      <div class="d-flex align-items-center">
+        <!-- Guest View -->
+        <div *ngIf="!isLoggedIn" class="me-3">
+          <a routerLink="/login" class="btn btn-outline-primary me-2">Login</a>
+          <a routerLink="/signup" class="btn btn-primary">Sign Up</a>
+        </div>
+        
+        <!-- Logged In View -->
+        <div *ngIf="isLoggedIn" class="me-3">
+          <div ngbDropdown class="d-inline-block">
+            <button class="btn btn-outline-secondary" id="userDropdown" ngbDropdownToggle>
+              <i class="bi bi-person-circle me-1"></i> {{ username }}
+            </button>
+            <div ngbDropdownMenu aria-labelledby="userDropdown">
+              <button ngbDropdownItem routerLink="/profile">My Profile</button>
+              <button ngbDropdownItem routerLink="/orders">My Orders</button>
+              <div class="dropdown-divider"></div>
+              <button ngbDropdownItem (click)="logout()">Logout</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Cart Button -->
+        <a routerLink="/cart" class="btn btn-outline-dark position-relative">
+          <i class="bi bi-cart-fill me-1"></i> Cart
+          <span *ngIf="cartItemCount > 0" 
+                class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+            {{ cartItemCount }}
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>

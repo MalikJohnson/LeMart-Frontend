@@ -1,0 +1,119 @@
+
+<div class="container-fluid py-5 bg-dark text-white mb-4">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-4 fw-bold">Le Mart</h1>
+        <p class="lead">The wallet friendly store</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="input-group">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Search products..." 
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="searchProducts()">
+        <button class="btn btn-outline-primary" type="button" (click)="searchProducts()">
+          <i class="bi bi-search"></i> Search
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-3 mb-4">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Categories</h5>
+        </div>
+        <div class="list-group list-group-flush">
+          <button 
+            class="list-group-item list-group-item-action" 
+            [class.active]="selectedCategoryId === null"
+            (click)="clearFilters()">
+            All Products
+          </button>
+          <button 
+            *ngFor="let category of categories" 
+            class="list-group-item list-group-item-action"
+            [class.active]="selectedCategoryId === category.id"
+            (click)="filterByCategory(category.id)">
+            {{ category.name }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-9">
+      <div class="row">
+        <div class="col-md-4 mb-4" *ngFor="let product of products">
+          <div class="card h-100">
+            <!-- Product image -->
+            <img 
+              [src]="product.imageUrl || 'assets/img/placeholder.jpg'" 
+              class="card-img-top" 
+              alt="{{ product.name }}" 
+              style="height: 200px; object-fit: cover;">
+            
+            <!-- Product details -->
+            <div class="card-body p-4">
+              <div class="text-center">
+                <h5 class="fw-bolder">{{ product.name }}</h5>
+                
+                <!-- Product ratings -->
+                <div class="d-flex justify-content-center small text-warning mb-2" *ngIf="product.rating">
+                  <div class="bi-star-fill" *ngFor="let star of getStars(product.rating)"></div>
+                </div>
+                
+                <!-- Product price (simplified) -->
+                <div class="fw-bold">
+                  {{ product.price | currency }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Product actions -->
+            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+              <div class="text-center">
+                <button 
+                  class="btn btn-outline-primary mt-auto" 
+                  (click)="addToCart(product)"
+                  [disabled]="product.stockQuantity <= 0">
+                  <i class="bi bi-cart-plus"></i> Add to cart
+                </button>
+              </div>
+              <div class="text-center mt-2">
+                <button class="btn btn-sm btn-outline-secondary" (click)="viewProductDetails(product.id)">
+                  Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="products.length === 0 && !loading" class="text-center py-5">
+        <i class="bi bi-search display-1 text-muted"></i>
+        <h3 class="mt-3">No products found</h3>
+        <p class="text-muted">Try changing your search or filter criteria</p>
+        <button class="btn btn-primary" (click)="clearFilters()">Show all products</button>
+      </div>
+
+      <!-- Loading state -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading products...</p>
+      </div>
+    </div>
+  </div>
+</div>
