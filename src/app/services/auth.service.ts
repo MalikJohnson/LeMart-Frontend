@@ -27,7 +27,12 @@ export class AuthService {
   // Auth methods
   login(credentials: { username: string; password: string }): Observable<{ token: string }> {
     return this.http.post<{ token: string }>(`${this.apiUrl}/auth/login`, credentials).pipe(
-      tap(response => this.handleAuthSuccess(response.token))
+      tap({
+        next: (response) => this.handleAuthSuccess(response.token),
+        error: (error) => {
+          throw new Error(error.error?.message || 'Login failed');
+        }
+      })
     );
   }
 

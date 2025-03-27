@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, forkJoin, of } from 'rxjs';
-import { catchError, switchMap, take, tap } from 'rxjs/operators';
+import { catchError, switchMap, tap, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -37,7 +37,6 @@ export class CartService {
 
   private changes = new Subject<void>();
   public changes$ = this.changes.asObservable();
-  
 
   constructor(
     private http: HttpClient,
@@ -49,7 +48,7 @@ export class CartService {
   // Initialization
   private initCart(): void {
     if (this.auth.hasValidToken()) {
-      this.syncWithServer();
+      this.syncWithServer().subscribe();
     } else {
       this.loadLocalCart();
     }
@@ -111,28 +110,33 @@ export class CartService {
   }
 
   // Sync Methods
-  syncWithServer(): void {
-    if (!this.auth.hasValidToken()) return;
-
-    forkJoin({
-      local: of(this.cart.value),
-      server: this.getServerCart().pipe(
-        catchError(() => of(EMPTY_CART_RESPONSE)) 
-      )
-    }).pipe(
-      switchMap(({ local, server }) => {
-        const merged = this.mergeCarts(local, server.items);
-        return this.saveToServer(merged);
-      }),
-      take(1)
-    ).subscribe({
-      next: (res) => this.updateCart(res.items),
-      error: (err) => console.error('Sync failed', err)
-    });
+syncWithServer(): Observable<void> {
+  if (!this.auth.hasValidToken()) {
+    return of(void 0);
   }
 
+  return forkJoin({
+    local: of(this.cart.value),
+    server: this.getServerCart().pipe(
+      catchError(() => of(EMPTY_CART_RESPONSE))
+    ) 
+  }).pipe(
+    switchMap(({ local, server }) => {
+      const merged = this.mergeCarts(local, server.items);
+      return this.saveToServer(merged);
+    }),
+    tap((res) => {
+      this.updateCart(res.items);
+    }),
+    map(() => {}),
+    catchError(error => {
+      console.error('Cart sync failed', error);
+      return of(void 0);
+    })
+  );
+}
+
   private mergeCarts(local: CartItem[], server: CartItem[]): CartItem[] {
-    // Advanced merging logic here
     return [...server, ...local.filter(l => 
       !server.some(s => s.productId === l.productId)
     )];

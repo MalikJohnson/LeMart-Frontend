@@ -1,20 +1,22 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { CommonModule } from '@angular/common';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-      imports: [
-        CommonModule
-      ],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   loginForm: FormGroup;
   errorMessage: string = '';
   isLoading: boolean = false;
@@ -31,39 +33,30 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    // Redirect to home if already logged in
-    if (this.authService.hasValidToken()) {
-      this.router.navigate(['/']);
-    }
-  }
-
   onSubmit(): void {
     if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    const { username, password } = this.loginForm.value;
-
-    this.authService.login(username, password).subscribe({
+    this.authService.login({
+      username: this.loginForm.value.username,
+      password: this.loginForm.value.password
+    }).pipe(
+      switchMap(() => this.cartService.syncWithServer())
+    ).subscribe({
       next: () => {
         this.isLoading = false;
-        // Sync cart after login
-        this.cartService.syncCart();
-        // Navigate to home page
         this.router.navigate(['/']);
       },
       error: (error) => {
         this.isLoading = false;
-        if (error.status === 401) {
-          this.errorMessage = 'Invalid username or password';
-        } else {
-          this.errorMessage = 'An error occurred. Please try again later.';
-        }
-        console.error('Login error', error);
+        this.errorMessage = error.message;
+        // Still navigate to home even if cart sync fails
+        this.router.navigate(['/']);
       }
     });
   }
