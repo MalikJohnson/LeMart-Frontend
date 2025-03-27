@@ -1,14 +1,19 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { NgIf } from '@angular/common';
+import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [NgIf,CommonModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    NgIf
+  ],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss']
 })
@@ -17,7 +22,6 @@ export class SignupComponent {
   errorMessage: string = '';
   isLoading: boolean = false;
   
-  // US states for dropdown
   states = [
     'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 
     'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 
@@ -29,7 +33,8 @@ export class SignupComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {
     this.signupForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -45,41 +50,34 @@ export class SignupComponent {
     });
   }
 
-  // Custom validator to check if passwords match
   passwordMatchValidator(formGroup: FormGroup) {
     const password = formGroup.get('password')?.value;
     const confirmPassword = formGroup.get('confirmPassword')?.value;
-    
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
   onSubmit(): void {
     if (this.signupForm.invalid) {
+      this.signupForm.markAllAsTouched();
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Extract form values (excluding confirmPassword)
     const { confirmPassword, ...userData } = this.signupForm.value;
 
     this.authService.signup(userData).subscribe({
-      next: () => {
+      next: (response) => {
         this.isLoading = false;
-        // Navigate to login page with success message
-        this.router.navigate(['/login'], { 
-          queryParams: { registrationSuccess: true } 
-        });
+        this.toastr.success(response.message);
+        this.router.navigate(['/']);
       },
       error: (error) => {
         this.isLoading = false;
-        if (error.status === 400) {
-          this.errorMessage = error.error || 'Username or email already exists';
-        } else {
-          this.errorMessage = 'An error occurred. Please try again later.';
-        }
-        console.error('Signup error', error);
+        this.errorMessage = error.error?.error || 
+                           error.error?.message || 
+                           'Registration failed. Please try again.';
       }
     });
   }

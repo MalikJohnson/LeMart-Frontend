@@ -8,7 +8,7 @@ import { NavComponent } from './components/nav/nav.component';
 //import { CartComponent } from './components/cart/cart.component'; 
 //import { CheckoutComponent } from './components/checkout/checkout.component'; 
 //import { LoginComponent } from './components/login/login.component'; 
-//import { SignupComponent } from './components/signup/signup.component'; 
+import { SignupComponent } from './components/signup/signup.component'; 
 //import { ProfileComponent } from './components/profile/profile.component'; 
 //import { OrderHistoryComponent } from './components/order-history/order-history.component'; 
 
