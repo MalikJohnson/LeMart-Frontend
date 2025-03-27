@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router'; 
-//import { NavComponent } from './components/nav/nav.component'; 
+import { NavComponent } from './components/nav/nav.component'; 
 //import { FooterComponent } from './components/footer/footer.component'; 
 //import { HomeComponent } from './components/home/home.component'; 
 //import { ProductListComponent } from './components/product-list/product-list.component';
@@ -17,7 +17,7 @@ import { RouterOutlet } from '@angular/router';
   standalone: true,
   imports: [
      RouterOutlet,
-     //NavComponent, 
+     NavComponent, 
      //FooterComponent, 
      //HomeComponent,
      //ProductListComponent,
@@ -30,9 +30,10 @@ import { RouterOutlet } from '@angular/router';
      //OrderHistoryComponent, 
   ],
   template: `
-    <div class="app-container">
-      <router-outlet></router-outlet>  
-    </div>
+    <app-nav></app-nav>
+    <main>
+      <router-outlet></router-outlet>
+    </main>
   `,
   styleUrls: ['./app.component.scss']
 })
