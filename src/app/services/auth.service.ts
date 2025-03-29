@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { JwtHelperService } from '@auth0/angular-jwt';
@@ -75,11 +75,20 @@ export class AuthService {
     return token ? !this.jwtHelper.isTokenExpired(token) : false;
   }
 
-  getUserId(): number | null {
+  getUserId(): number {
     const token = this.getToken();
-    if (!token) return null;
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
+    
     const decoded = this.jwtHelper.decodeToken(token);
-    return decoded?.userId || null;
+    const userId = decoded?.userId;
+    
+    if (!userId) {
+      throw new Error('User ID not found in token');
+    }
+    
+    return userId;
   }
 
   getUsername(): string | null {
@@ -98,4 +107,15 @@ export class AuthService {
     const decoded = this.jwtHelper.decodeToken(token);
     return decoded?.role === 'ADMIN';
   }
+
+  getAuthHeader(): HttpHeaders {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
+  
 }

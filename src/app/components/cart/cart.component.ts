@@ -47,7 +47,7 @@ export class CartComponent implements OnInit {
   loadCartItems(): void {
     this.loading = true;
     
-    this.cartService.cartItems$.subscribe({
+    this.cartService.cart$.subscribe({
       next: (items) => {
         this.cartItems = items;
         this.loading = false;
@@ -66,13 +66,13 @@ export class CartComponent implements OnInit {
     }
 
     this.loading = true;
-    this.cartService.updateQuantity(item.productId, newQuantity);
+    this.cartService.updateItem(item.productId, newQuantity);
     this.loading = false;
   }
 
   removeFromCart(item: any): void {
     this.loading = true;
-    this.cartService.removeFromCart(item.productId);
+    this.cartService.removeItem(item.productId);
     this.loading = false;
     this.toastr.success('Item removed from cart');
   }

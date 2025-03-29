@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, forkJoin, of } from 'rxjs';
 import { catchError, switchMap, tap, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -144,14 +144,33 @@ syncWithServer(): Observable<void> {
 
   // API Communication
   private getServerCart(): Observable<CartResponse> {
-    return this.http.get<CartResponse>(`${this.apiUrl}/user`);
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.auth.getToken()}` // MUST include this
+    });
+  
+    return this.http.get<CartResponse>(
+      `${this.apiUrl}/user/${this.auth.getUserId()}`,
+      { headers }
+    ).pipe(
+      catchError(error => {
+        console.error('API Error:', error);
+        return of(EMPTY_CART_RESPONSE);
+      })
+    );
   }
 
   private saveToServer(items: CartItem[]): Observable<CartResponse> {
     const userId = this.auth.getUserId();
-    if (!userId) throw new Error('User not authenticated');
-    
-    return this.http.post<CartResponse>(this.apiUrl, { userId, items });
+    return this.http.post<CartResponse>(this.apiUrl, { 
+      userId, 
+      items: items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        priceAtAddition: item.priceAtPurchase
+      }))
+    }, {
+      headers: this.auth.getAuthHeader()
+    });
   }
 
   // Helpers
