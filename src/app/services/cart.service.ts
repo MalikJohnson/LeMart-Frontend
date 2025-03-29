@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject, forkJoin, of } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, forkJoin, of, throwError } from 'rxjs';
 import { catchError, switchMap, tap, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
@@ -144,16 +144,43 @@ syncWithServer(): Observable<void> {
 
   // API Communication
   private getServerCart(): Observable<CartResponse> {
+    console.log('[DEBUG] Starting getServerCart()');
+    
+    if (!this.auth.hasValidToken()) {
+      console.error('[DEBUG] No valid token - using empty cart');
+      return of(EMPTY_CART_RESPONSE);
+    }
+  
+    const token = this.auth.getToken();
+    if (!token) {
+      console.error('[DEBUG] Token is null');
+      return of(EMPTY_CART_RESPONSE);
+    }
+  
+    // Create headers PROPERLY
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.auth.getToken()}` // MUST include this
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
     });
+  
+    console.log('[DEBUG] Final headers:', headers); // Verify headers are built correctly
+    console.log('[DEBUG] Raw token:', this.auth.getToken());
+    console.log('[DEBUG] Decoded token:', this.auth.decodeToken());
   
     return this.http.get<CartResponse>(
       `${this.apiUrl}/user/${this.auth.getUserId()}`,
-      { headers }
+      { 
+        headers: headers,
+        withCredentials: true // Important for session/cookie auth
+      }
     ).pipe(
       catchError(error => {
-        console.error('API Error:', error);
+        console.error('[DEBUG] Full error response:', {
+          status: error.status,
+          message: error.message,
+          headers: error.headers,
+          error: error.error
+        });
         return of(EMPTY_CART_RESPONSE);
       })
     );
@@ -161,16 +188,38 @@ syncWithServer(): Observable<void> {
 
   private saveToServer(items: CartItem[]): Observable<CartResponse> {
     const userId = this.auth.getUserId();
-    return this.http.post<CartResponse>(this.apiUrl, { 
-      userId, 
-      items: items.map(item => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        priceAtAddition: item.priceAtPurchase
-      }))
-    }, {
-      headers: this.auth.getAuthHeader()
-    });
+    const headers = this.auth.getAuthHeader();
+  
+    return this.getServerCart().pipe(
+      switchMap(serverCart => {
+        const requestBody = {
+          items: items.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            priceAtAddition: item.priceAtPurchase
+          }))
+        };
+  
+        if (serverCart.id !== 'temp') {
+          return this.http.put<CartResponse>(
+            `${this.apiUrl}/user/${userId}`,
+            requestBody, // Send properly formatted request body
+            { headers }
+          ).pipe(
+            catchError(error => {
+              console.error('Cart update failed', error);
+              return throwError(() => error);
+            })
+          );
+        } else {
+          return this.http.post<CartResponse>(
+            this.apiUrl,
+            { userId, items: requestBody.items },
+            { headers }
+          );
+        }
+      })
+    );
   }
 
   // Helpers

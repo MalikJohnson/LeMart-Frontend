@@ -117,5 +117,23 @@ export class AuthService {
       'Authorization': `Bearer ${token}`
     });
   }
+
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+    return this.jwtHelper.isTokenExpired(token);
+  }
+
+  decodeToken(): any {
+    const token = this.getToken();
+    if (!token) return null;
+    
+    try {
+      return this.jwtHelper.decodeToken(token);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  }
   
 }
