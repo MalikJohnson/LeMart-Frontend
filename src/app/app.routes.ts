@@ -37,10 +37,10 @@ export const routes: Routes = [
   //   path: 'checkout',
   //   loadComponent: () => import('./components/checkout/checkout.component').then(m => m.CheckoutComponent)
   // },
-  // {
-  //   path: 'profile',
-  //   loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent)
-  // },
+   {
+     path: 'profile',
+     loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent)
+   },
   // {
   //   path: 'orders',
   //   loadComponent: () => import('./components/order-history/order-history.component').then(m => m.OrderHistoryComponent)

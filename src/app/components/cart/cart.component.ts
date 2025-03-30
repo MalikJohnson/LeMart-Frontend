@@ -35,16 +35,16 @@ export class CartComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.checkAuthentication();
+    //this.checkAuthentication();
     this.loadCartItems();
   }
 
-  checkAuthentication(): void {
+  /*checkAuthentication(): void {
     if (!this.authService.hasValidToken()) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: '/cart' } });
       this.toastr.info('Please log in to view your cart');
     }
-  }
+  }*/
 
   loadCartItems(): void {
     this.loading = true;

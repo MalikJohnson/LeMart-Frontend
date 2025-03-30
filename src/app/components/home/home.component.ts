@@ -102,13 +102,13 @@ export class HomeComponent implements OnInit {
       return;
     }
     
-    if (!this.authService.hasValidToken()) {
+    /*if (!this.authService.hasValidToken()) {
       this.toastr.info('Please log in to add items to cart');
       this.router.navigate(['/login'], { 
         queryParams: { returnUrl: this.router.url } 
       });
       return;
-    }
+    }*/
   
     this.cartService.addItem(product.id, product.price, 1);
     this.toastr.success(`${product.name} added to cart!`);

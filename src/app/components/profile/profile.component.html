@@ -1,1 +1,113 @@
-<p>profile works!</p>
+<div class="container py-5">
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="card shadow">
+          <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">User Profile</h3>
+          </div>
+          
+          <div class="card-body">
+            <!-- Error Message -->
+            @if (errorMessage) {
+              <div class="alert alert-danger text-center">
+                {{ errorMessage }}
+              </div>
+            }
+  
+            <!-- Loading State -->
+            @if (isLoading) {
+              <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading profile...</p>
+              </div>
+            }
+  
+            <!-- View Mode -->
+            @if (!isEditing && user && !isLoading) {
+              <div class="user-info">
+                <div class="mb-3">
+                  <h5 class="text-muted">Username</h5>
+                  <p class="h4">{{ user.username }}</p>
+                </div>
+                
+                <div class="mb-3">
+                  <h5 class="text-muted">Email</h5>
+                  <p class="h5">{{ user.email }}</p>
+                </div>
+                
+                <div class="mb-3">
+                  <h5 class="text-muted">Address</h5>
+                  @if (user.streetAddress) {
+                    <p class="h5">{{ user.streetAddress }}</p>
+                  }
+                  <p class="h5">{{ user.city }}, {{ user.state }} {{ user.zipCode }}</p>
+                </div>
+                
+                <div class="mt-4">
+                  <button class="btn btn-primary me-2" (click)="startEditing()">
+                    <i class="bi bi-pencil-square"></i> Edit Profile
+                  </button>
+                  @if (user.isAdmin) {
+                    <button class="btn btn-outline-secondary" routerLink="/admin">
+                      Admin Dashboard
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+  
+            <!-- Edit Mode -->
+            @if (isEditing && user && !isLoading) {
+              <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+                <div class="mb-3">
+                  <label for="username" class="form-label">Username</label>
+                  <input type="text" class="form-control" id="username" formControlName="username">
+                </div>
+                
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email" formControlName="email">
+                </div>
+                
+                <div class="mb-3">
+                  <label for="streetAddress" class="form-label">Street Address</label>
+                  <input type="text" class="form-control" id="streetAddress" formControlName="streetAddress">
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" class="form-control" id="city" formControlName="city">
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="state" class="form-label">State</label>
+                    <input type="text" class="form-control" id="state" formControlName="state">
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="zipCode" class="form-label">Zip Code</label>
+                    <input type="text" class="form-control" id="zipCode" formControlName="zipCode">
+                  </div>
+                </div>
+                
+                <div class="mt-4">
+                  <button type="submit" class="btn btn-primary me-2" [disabled]="profileForm.invalid || isSaving">
+                    @if (isSaving) {
+                      <span class="spinner-border spinner-border-sm me-1"></span>
+                      Saving...
+                    } @else {
+                      Save Changes
+                    }
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" (click)="cancelEditing()">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
