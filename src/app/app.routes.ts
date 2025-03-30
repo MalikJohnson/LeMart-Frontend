@@ -4,7 +4,7 @@ import { HomeComponent } from './components/home/home.component';
 // Keep commented imports for future reference
 // import { ProductListComponent } from './components/product-list/product-list.component';
 // import { ProductDetailComponent } from './components/product-detail/product-detail.component'; 
-// import { CartComponent } from './components/cart/cart.component'; 
+ //import { CartComponent } from './components/cart/cart.component'; 
 // import { CheckoutComponent } from './components/checkout/checkout.component'; 
 // import { LoginComponent } from './components/login/login.component'; 
 // import { SignupComponent } from './components/signup/signup.component'; 
@@ -29,10 +29,10 @@ export const routes: Routes = [
   //   path: 'products',
   //   loadComponent: () => import('./components/product-list/product-list.component').then(m => m.ProductListComponent)
   // },
-  // {
-  //   path: 'cart',
-  //   loadComponent: () => import('./components/cart/cart.component').then(m => m.CartComponent)
-  // },
+   {
+     path: 'cart',
+     loadComponent: () => import('./components/cart/cart.component').then(m => m.CartComponent)
+   },
   // {
   //   path: 'checkout',
   //   loadComponent: () => import('./components/checkout/checkout.component').then(m => m.CheckoutComponent)

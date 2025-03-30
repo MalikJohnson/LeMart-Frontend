@@ -45,7 +45,7 @@
                           style="width: 80px; height: 80px; object-fit: cover;">
                         <div class="ms-3">
                           <h6 class="mb-0">{{ item.product.name }}</h6>
-                          <small class="text-muted">SKU: {{ item.product.id }}</small>
+                         <!-- <small class="text-muted">SKU: {{ item.product.id }}</small>-->
                         </div>
                       </div>
                     </td>
@@ -108,7 +108,7 @@
                 <span>{{ calculateShipping() | currency }}</span>
               </div>
               <div class="d-flex justify-content-between mb-3">
-                <span>Tax ({{ taxRate * 100 }}%)</span>
+                <span>Tax ({{ (taxRate * 100).toFixed(2) }}%)</span>
                 <span>{{ calculateTax() | currency }}</span>
               </div>
               <hr>

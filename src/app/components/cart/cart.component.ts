@@ -1,18 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
 import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
+import { forkJoin, map, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterModule
   ],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.scss']
@@ -47,7 +49,22 @@ export class CartComponent implements OnInit {
   loadCartItems(): void {
     this.loading = true;
     
-    this.cartService.cart$.subscribe({
+    this.cartService.cart$.pipe(
+      switchMap(items => {
+        if (items.length === 0) return of([]);
+        
+        return forkJoin(
+          items.map(item => 
+            this.productService.getById(item.productId).pipe(
+              map(product => ({
+                ...item,
+                product: product
+              }))
+            )
+          )
+        );
+      })
+    ).subscribe({
       next: (items) => {
         this.cartItems = items;
         this.loading = false;
@@ -88,7 +105,7 @@ export class CartComponent implements OnInit {
 
   calculateSubtotal(): number {
     return this.cartItems.reduce((total, item) => {
-      return total + (item.price * item.quantity);
+      return total + (item.product.price * item.quantity); 
     }, 0);
   }
 
@@ -98,7 +115,7 @@ export class CartComponent implements OnInit {
   }
 
   calculateTax(): number {
-    return this.calculateSubtotal() * this.taxRate;
+    return parseFloat((this.calculateSubtotal() * this.taxRate).toFixed(2));
   }
 
   calculateTotal(): number {
