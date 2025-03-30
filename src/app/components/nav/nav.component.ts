@@ -65,6 +65,7 @@ export class NavComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+    this.cartItemCount = 0;
     this.router.navigate(['/login']);
   }
 }
