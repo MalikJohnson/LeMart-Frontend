@@ -1,51 +1,78 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin, switchMap } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   Order,
   OrderItem,
   CreateOrderRequest,
-  AddOrderItemRequest,
-  OrderWithItems
+  UpdateOrderStatusRequest,
+  OrderStatus
 } from '../models/order';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
   private baseUrl = `${environment.apiUrl}/orders`;
-  private itemsUrl = `${environment.apiUrl}/order-items`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
+
+  private getAuthHeaders(): HttpHeaders {
+    return this.authService.getAuthHeader();
+  }
 
   // GET METHODS
   getUserOrders(userId: number): Observable<Order[]> {
-    return this.http.get<Order[]>(`${this.baseUrl}/user/${userId}`);
+    return this.http.get<Order[]>(`${this.baseUrl}/user/${userId}`, {
+      headers: this.getAuthHeaders()
+    });
   }
 
-  getOrderById(orderId: number): Observable<OrderWithItems> {
-    return this.http.get<OrderWithItems>(`${this.baseUrl}/${orderId}`);
+  getOrderById(orderId: number): Observable<Order> {
+    return this.http.get<Order>(`${this.baseUrl}/${orderId}`, {
+      headers: this.getAuthHeaders()
+    });
   }
 
-  getOrderItems(orderId: number): Observable<OrderItem[]> {
-    return this.http.get<OrderItem[]>(`${this.itemsUrl}/order/${orderId}`);
-  }
-
-  // ORDER CREATION
+  // ORDER OPERATIONS
   createOrder(request: CreateOrderRequest): Observable<Order> {
     const payload: CreateOrderRequest = {
       ...request,
       status: request.status || 'PENDING'
     };
-    return this.http.post<Order>(this.baseUrl, payload);
+    return this.http.post<Order>(this.baseUrl, payload, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      catchError(error => {
+        console.error('Detailed error:', error);
+        throw error;
+      })
+    );
   }
 
-  addOrderItem(request: AddOrderItemRequest): Observable<OrderItem> {
-    return this.http.post<OrderItem>(this.itemsUrl, request);
+  updateOrderStatus(orderId: number, status: 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED'): Observable<Order> {
+    const payload: UpdateOrderStatusRequest = { status };
+    return this.http.patch<Order>(
+        `${this.baseUrl}/${orderId}/status`, 
+        payload,
+        {
+            headers: this.getAuthHeaders()
+        }
+    );
+}
+
+  deleteOrder(orderId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${orderId}`, {
+      headers: this.getAuthHeaders()
+    });
   }
 
-  // COMPLEX OPERATIONS
+  // CART CONVERSION
   convertCartToOrder(
     userId: number,
     items: Array<{
@@ -53,38 +80,15 @@ export class OrderService {
       quantity: number;
       currentPrice: number;
     }>
-  ): Observable<OrderWithItems> {
-    const total = this.calculateTotal(items);
-    const orderRequest: CreateOrderRequest = { userId, totalAmount: total };
-
-    return this.createOrder(orderRequest).pipe(
-      switchMap(order => {
-        if (items.length === 0) {
-          return this.http.get<OrderWithItems>(`${this.baseUrl}/${order.id}`);
-        }
-
-        const itemRequests = items.map(item =>
-          this.addOrderItem({
-            orderId: order.id,
-            productId: item.productId,
-            quantity: item.quantity,
-            priceAtPurchase: item.currentPrice
-          })
-        );
-
-        return forkJoin(itemRequests).pipe(
-          switchMap(() => this.getOrderById(order.id))
-        );
-      })
-    );
-  }
-
-  private calculateTotal(
-    items: Array<{ quantity: number; currentPrice: number }>
-  ): number {
-    return items.reduce(
-      (sum, item) => sum + (item.quantity * item.currentPrice),
-      0
-    );
+  ): Observable<Order> {
+    const orderRequest: CreateOrderRequest = {
+      userId,
+      orderItems: items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        priceAtPurchase: item.currentPrice
+      }))
+    };
+    return this.createOrder(orderRequest);
   }
 }

@@ -1,1 +1,103 @@
-<p>checkout works!</p>
+<div class="container py-5">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Checkout</h5>
+          </div>
+          
+          <!-- User Information -->
+          <div class="card-body">
+            <h5 class="mb-3">Contact Information</h5>
+            <div class="mb-4 p-3 border rounded">
+              <div *ngIf="loading" class="text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              
+              <div *ngIf="!loading && userInfo">
+                <p class="mb-1"><strong>{{ userInfo.firstName }} {{ userInfo.lastName }}</strong></p>
+                <p class="mb-1">{{ userInfo.email }}</p>
+                <p class="mb-1" *ngIf="userInfo.address">{{ userInfo.address }}</p>
+                <p class="mb-1" *ngIf="userInfo.city || userInfo.state || userInfo.zipCode">
+                  {{ userInfo.city }}, {{ userInfo.state }} {{ userInfo.zipCode }}
+                </p>
+                <button class="btn btn-sm btn-outline-primary mt-2" routerLink="/profile">
+                    Edit Information
+                  </button>
+              </div>
+            </div>
+  
+            <!-- Payment Method -->
+            <h5 class="mb-3">Payment Method</h5>
+            <div class="mb-4 p-3 border rounded">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" 
+                       value="credit_card" [(ngModel)]="paymentMethod" checked>
+                <label class="form-check-label" for="creditCard">
+                  Credit/Debit Card
+                </label>
+              </div>
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="paymentMethod" id="paypal" 
+                       value="paypal" [(ngModel)]="paymentMethod">
+                <label class="form-check-label" for="paypal">
+                  PayPal
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="paymentMethod" id="zelle" 
+                       value="zelle" [(ngModel)]="paymentMethod">
+                <label class="form-check-label" for="zelle">
+                  Zelle
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Order Summary -->
+      <div class="col-lg-4">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Order Summary</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="cartItems.length > 0">
+              <div class="d-flex justify-content-between mb-2">
+                <span>Subtotal</span>
+                <span>{{ subtotal | currency }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Shipping</span>
+                <span>{{ shipping | currency }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Tax</span>
+                <span>{{ tax | currency }}</span>
+              </div>
+              <hr>
+              <div class="d-flex justify-content-between mb-3">
+                <span class="fw-bold">Total</span>
+                <span class="fw-bold fs-5">{{ total | currency }}</span>
+              </div>
+              
+              <button class="btn btn-primary w-100" 
+                      (click)="placeOrder()"
+                      [disabled]="loading || cartItems.length === 0">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Place Order
+              </button>
+            </div>
+  
+            <div *ngIf="cartItems.length === 0" class="text-center py-3">
+              <p class="text-muted">Your cart is empty</p>
+              <button class="btn btn-outline-primary" routerLink="/">Continue Shopping</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

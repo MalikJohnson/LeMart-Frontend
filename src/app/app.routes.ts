@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
 
-// Keep commented imports for future reference
+
 // import { ProductListComponent } from './components/product-list/product-list.component';
 // import { ProductDetailComponent } from './components/product-detail/product-detail.component'; 
  //import { CartComponent } from './components/cart/cart.component'; 
@@ -24,7 +24,7 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent)
   },
-  // Add other routes as you uncomment components
+  // 
   // {
   //   path: 'products',
   //   loadComponent: () => import('./components/product-list/product-list.component').then(m => m.ProductListComponent)
@@ -33,10 +33,10 @@ export const routes: Routes = [
      path: 'cart',
      loadComponent: () => import('./components/cart/cart.component').then(m => m.CartComponent)
    },
-  // {
-  //   path: 'checkout',
-  //   loadComponent: () => import('./components/checkout/checkout.component').then(m => m.CheckoutComponent)
-  // },
+   {
+     path: 'checkout',
+     loadComponent: () => import('./components/checkout/checkout.component').then(m => m.CheckoutComponent)
+   },
    {
      path: 'profile',
      loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent)
