@@ -18,19 +18,25 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit {
-  user: any;
+  user: any = null;
   isEditing = false;
-  isSaving = false; // Added missing property
   isLoading = false;
-  errorMessage: string | null = null;
   profileForm: FormGroup;
+
+  states = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+  ];
 
   constructor(
     private userService: UserService,
     private authService: AuthService,
     private fb: FormBuilder,
-    private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private router: Router
   ) {
     this.profileForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -48,66 +54,58 @@ export class ProfileComponent implements OnInit {
 
   loadProfile(): void {
     this.isLoading = true;
-    this.errorMessage = null;
-
     const userId = this.authService.getUserId();
+    
     if (!userId) {
-      this.handleUnauthorized();
+      this.toastr.error('User not authenticated');
+      this.isLoading = false;
       return;
     }
 
     this.userService.getUserById(userId).subscribe({
       next: (user) => {
         this.user = user;
+        this.profileForm.patchValue(user);
         this.isLoading = false;
       },
       error: (err) => {
         this.isLoading = false;
-        console.error('Profile load error', err);
-        this.errorMessage = 'Failed to load profile';
-        this.toastr.error(this.errorMessage);
-        if (err.status === 401) {
-          this.handleUnauthorized();
-        }
+        console.error('Profile load error:', err);
+        this.toastr.error('Failed to load profile data');
+        console.log('Token valid:', this.authService.hasValidToken());
+        console.log('Token expiration:', this.authService.isTokenExpired());
       }
     });
   }
 
-  private handleUnauthorized(): void {
-    this.authService.logout();
-    this.router.navigate(['/login'], {
-      queryParams: { returnUrl: this.router.url }
-    });
-  }
-
   startEditing(): void {
-    if (!this.user) return;
-    this.profileForm.patchValue(this.user);
     this.isEditing = true;
   }
 
   cancelEditing(): void {
     this.isEditing = false;
+    this.profileForm.patchValue(this.user);
   }
 
   saveProfile(): void {
-    if (!this.user || this.profileForm.invalid) return;
+    if (this.profileForm.invalid || !this.user) return;
 
-    this.isSaving = true;
+    this.isLoading = true;
     this.userService.updateUser(this.user.id, this.profileForm.value).subscribe({
       next: (updatedUser) => {
         this.user = updatedUser;
         this.isEditing = false;
-        this.isSaving = false;
+        this.isLoading = false;
         this.toastr.success('Profile updated successfully');
+        
+        if (updatedUser.username !== this.authService.getUsername()) {
+          this.authService.setUsername(updatedUser.username);
+        }
       },
       error: (err) => {
-        this.isSaving = false;
-        console.error('Profile update error', err);
+        this.isLoading = false;
+        console.error('Profile update error:', err);
         this.toastr.error('Failed to update profile');
-        if (err.status === 401) {
-          this.handleUnauthorized();
-        }
       }
     });
   }

@@ -7,6 +7,7 @@ import {
   CreateUserRequest, 
   UpdateUserRequest 
 } from '../models/user';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,19 +15,28 @@ import {
 export class UserService {
   private apiUrl = `${environment.apiUrl}/users`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private auth: AuthService) { }
 
   createUser(userData: CreateUserRequest): Observable<User> {
     return this.http.post<User>(this.apiUrl, userData);
   }
 
   getUserById(id: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`);
+    return this.http.get<User>(`${this.apiUrl}/${id}`, {
+      headers: this.auth.getAuthHeader()
+    });
   }
 
   updateUser(id: number, userData: UpdateUserRequest): Observable<User> {
-    return this.http.patch<User>(`${this.apiUrl}/${id}`, userData);
-  }
+  return this.http.patch<User>(  
+    `${this.apiUrl}/${id}`, 
+    userData, 
+    {
+      headers: this.auth.getAuthHeader(),
+      withCredentials: true
+    }
+  );
+}
 
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
