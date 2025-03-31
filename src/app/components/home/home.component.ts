@@ -118,7 +118,15 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/products', productId]);
   }
 
-  getStars(rating: number): number[] {
-    return Array(Math.floor(rating)).fill(0);
+  getRatingStars(rating: number) {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    
+    return {
+      fullStars: Array(fullStars).fill(0),
+      hasHalfStar,
+      emptyStars: Array(emptyStars).fill(0)
+    };
   }
 }

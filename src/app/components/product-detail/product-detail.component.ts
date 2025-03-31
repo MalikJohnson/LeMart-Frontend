@@ -72,9 +72,9 @@ getRatingStars(rating: number) {
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
   
   return {
-    fullStars: Array(fullStars).fill(0), // Convert to array for *ngFor
+    fullStars: Array(fullStars).fill(0), 
     hasHalfStar,
-    emptyStars: Array(emptyStars).fill(0) // Convert to array for *ngFor
+    emptyStars: Array(emptyStars).fill(0) 
   };
 }
 }
