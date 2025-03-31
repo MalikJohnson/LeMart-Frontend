@@ -115,7 +115,7 @@ export class HomeComponent implements OnInit {
   }
 
   viewProductDetails(productId: number): void {
-    this.router.navigate(['/products', productId]);
+    this.router.navigate(['/product-details', productId]);
   }
 
   getRatingStars(rating: number) {

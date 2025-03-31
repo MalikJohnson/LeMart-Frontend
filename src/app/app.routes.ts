@@ -42,7 +42,7 @@ export const routes: Routes = [
      loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent)
    },
    {
-    path: 'products/:id',
+    path: 'product-details/:id',
     loadComponent: () => import('./components/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
   },
   // {
