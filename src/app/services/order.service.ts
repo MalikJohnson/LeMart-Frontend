@@ -79,7 +79,11 @@ export class OrderService {
       productId: number;
       quantity: number;
       currentPrice: number;
-    }>
+    }>,
+    subtotal: number,
+    tax: number,
+    shipping: number,
+    total: number
   ): Observable<Order> {
     const orderRequest: CreateOrderRequest = {
       userId,
@@ -87,7 +91,11 @@ export class OrderService {
         productId: item.productId,
         quantity: item.quantity,
         priceAtPurchase: item.currentPrice
-      }))
+      })),
+      subtotal,
+      tax,
+      shipping,
+      totalAmount: total
     };
     return this.createOrder(orderRequest);
   }

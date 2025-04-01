@@ -127,7 +127,14 @@ export class CheckoutComponent implements OnInit {
       currentPrice: item.product.price
     }));
   
-    this.orderService.convertCartToOrder(userId, orderItems).subscribe({
+    this.orderService.convertCartToOrder(
+      userId,
+      orderItems,
+      this.subtotal,
+      this.tax,
+      this.shipping,
+      this.total
+    ).subscribe({
       next: (order) => {
         this.loading = false;
         this.cartService.clearCart();
@@ -139,7 +146,6 @@ export class CheckoutComponent implements OnInit {
         this.loading = false;
         this.toastr.error('Failed to place order. Please try again.');
         
-        // Handle specific 401 case
         if (err.status === 401) {
           this.authService.logout();
           this.router.navigate(['/login']);

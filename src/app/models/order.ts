@@ -1,6 +1,9 @@
 export interface Order {
   id: number;
   userId: number;
+  subtotal: number;  
+  tax: number;       
+  shipping: number;  
   totalAmount: number;
   status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED';
   createdAt?: Date;
@@ -22,7 +25,11 @@ export interface CreateOrderRequest {
     quantity: number;
     priceAtPurchase: number;
   }[];
-  status?: 'PENDING' | 'PROCESSING'; // Only allow initial statuses
+  subtotal: number;  
+  tax: number;       
+  shipping: number;  
+  totalAmount: number;
+  status?: 'PENDING' | 'PROCESSING';
 }
 
 export interface UpdateOrderStatusRequest {
