@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, Observable } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   Order,
@@ -10,6 +10,7 @@ import {
   OrderStatus
 } from '../models/order';
 import { AuthService } from './auth.service';
+import { Product } from '../models/product';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +31,36 @@ export class OrderService {
   getUserOrders(userId: number): Observable<Order[]> {
     return this.http.get<Order[]>(`${this.baseUrl}/user/${userId}`, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      switchMap((orders: Order[]) => {
+        if (!orders.length) return of<Order[]>([]);
+        
+        const enhancedOrders$ = orders.map(order => {
+          if (!order.orderItems || !order.orderItems.length) {
+            return of<Order>(order);
+          }
+  
+          const enhancedItems$ = order.orderItems.map(item => 
+            this.http.get<Product>(`${environment.apiUrl}/products/${item.productId}`).pipe(
+              map((product: Product) => ({
+                ...item,
+                productName: product.name,
+                productImage: product.imageUrl
+              } as OrderItem))
+            )
+          );
+  
+          return forkJoin(enhancedItems$).pipe(
+            map((items: OrderItem[]) => ({
+              ...order,
+              orderItems: items
+            } as Order))
+          );
+        });
+  
+        return forkJoin(enhancedOrders$);
+      })
+    );
   }
 
   getOrderById(orderId: number): Observable<Order> {

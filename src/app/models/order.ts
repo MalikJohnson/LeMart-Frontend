@@ -6,8 +6,8 @@ export interface Order {
   shipping: number;  
   totalAmount: number;
   status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED';
-  createdAt?: Date;
-  items: OrderItem[];
+  createdAt: Date;
+  orderItems: OrderItem[];
 }
 
 export interface OrderItem {
@@ -15,7 +15,9 @@ export interface OrderItem {
   orderId: number;
   productId: number;
   quantity: number;
-  priceAtPurchase: number;  
+  priceAtPurchase: number;
+  productName?: string;
+  productImage?: string;
 }
 
 export interface CreateOrderRequest {

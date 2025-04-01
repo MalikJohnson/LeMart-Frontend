@@ -1,91 +1,101 @@
 <div class="container py-5">
-    <div class="row">
-      <div class="col-12">
-        <h1 class="mb-4">My Orders</h1>
-        
-        <!-- Loading State -->
-        <div *ngIf="loading" class="text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+  <div class="row">
+    <div class="col-12">
+      <h1 class="mb-4">My Orders</h1>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading your orders...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="alert alert-danger">
+        Failed to load orders. Please try again later.
+        <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadOrders()">Retry</button>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && !error && orders.length === 0" class="text-center py-5">
+        <i class="bi bi-box-seam display-1 text-muted"></i>
+        <h3 class="mt-3">No orders found</h3>
+        <p class="text-muted">You haven't placed any orders yet</p>
+        <a routerLink="/" class="btn btn-primary">Start Shopping</a>
+      </div>
+
+      <!-- Orders List -->
+      <div *ngIf="!loading && !error && orders.length > 0" class="list-group">
+        <div *ngFor="let order of orders" class="list-group-item mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <h5 class="mb-0">Order #{{order.id}}</h5>
+              <small class="text-muted">
+                Placed on {{ order.createdAt | date:'medium' }}
+              </small>
+            </div>
+            <span class="badge rounded-pill {{getStatusClass(order.status)}}">
+              {{order.status}}
+            </span>
           </div>
-          <p class="mt-2">Loading your orders...</p>
-        </div>
-        
-        <!-- Error State -->
-        <div *ngIf="error && !loading" class="alert alert-danger">
-          Failed to load orders. Please try again later.
-          <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadOrders()">Retry</button>
-        </div>
-        
-        <!-- Empty State -->
-        <div *ngIf="!loading && !error && orders.length === 0" class="text-center py-5">
-          <i class="bi bi-box-seam display-1 text-muted"></i>
-          <h3 class="mt-3">No orders found</h3>
-          <p class="text-muted">You haven't placed any orders yet</p>
-          <a routerLink="/" class="btn btn-primary">Start Shopping</a>
-        </div>
-        
-        <!-- Orders List -->
-        <div *ngIf="!loading && !error && orders.length > 0" class="list-group">
-          <div *ngFor="let order of orders" class="list-group-item mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <h5 class="mb-0">Order #{{order.id}}</h5>
-                <small class="text-muted">Placed on {{order.createdAt | date:'medium'}}</small>
-              </div>
-              <span class="badge rounded-pill {{getStatusClass(order.status)}}">
-                {{order.status}}
-              </span>
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <strong>Subtotal:</strong> {{order.subtotal | currency}}
             </div>
-            
-            <div class="row mb-3">
-              <div class="col-md-4">
-                <strong>Subtotal:</strong> {{order.subtotal | currency}}
-              </div>
-              <div class="col-md-4">
-                <strong>Shipping:</strong> {{order.shipping | currency}}
-              </div>
-              <div class="col-md-4">
-                <strong>Total:</strong> {{order.totalAmount | currency}}
-              </div>
+            <div class="col-md-4">
+              <strong>Shipping:</strong> {{order.shipping | currency}}
             </div>
-            
-            <div class="mb-3">
-              <h6>Items:</h6>
-              <div class="table-responsive">
-                <table class="table table-sm">
-                  <thead>
-                    <tr>
-                      <th>Product</th>
-                      <th>Quantity</th>
-                      <th>Price</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let item of order.items">
-                      <td>Product #{{item.productId}}</td>
-                      <td>{{item.quantity}}</td>
-                      <td>{{item.priceAtPurchase | currency}}</td>
-                      <td>{{item.quantity * item.priceAtPurchase | currency}}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            <div class="col-md-4">
+              <strong>Total:</strong> {{order.totalAmount | currency}}
             </div>
-            
-            <div class="d-flex justify-content-end">
-              <button *ngIf="canCancel(order)" 
-                      class="btn btn-outline-danger me-2" 
-                      (click)="openCancelModal(order)">
-                Cancel Order
-              </button>
-              <a [routerLink]="['/orders', order.id]" class="btn btn-outline-primary">
-                View Details
-              </a>
+          </div>
+
+          <div class="mb-3">
+            <h6>Items:</h6>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of order.orderItems">
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <img [src]="item.productImage || 'assets/img/placeholder.jpg'" 
+                             alt="{{ item.productName }}" 
+                             class="img-fluid rounded me-2" 
+                             style="width: 50px; height: 50px; object-fit: cover;">
+                        {{ item.productName || 'Product #' + item.productId }}
+                      </div>
+                    </td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.priceAtPurchase | currency }}</td>
+                    <td>{{ item.priceAtPurchase * item.quantity | currency }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button *ngIf="canCancel(order)" 
+                    class="btn btn-outline-danger me-2" 
+                    (click)="openCancelModal(order)">
+              Cancel Order
+            </button>
+          <!--  <a [routerLink]="['/orders', order.id]" class="btn btn-outline-primary">
+              View Details
+            </a> -->
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
