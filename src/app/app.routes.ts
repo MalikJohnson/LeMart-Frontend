@@ -45,9 +45,9 @@ export const routes: Routes = [
     path: 'product-details/:id',
     loadComponent: () => import('./components/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
   },
-  // {
-  //   path: 'orders',
-  //   loadComponent: () => import('./components/order-history/order-history.component').then(m => m.OrderHistoryComponent)
-  // },
+   {
+     path: 'orders',
+     loadComponent: () => import('./components/order-history/order-history.component').then(m => m.OrderHistoryComponent)
+   },
   { path: '**', redirectTo: '' }
 ];
