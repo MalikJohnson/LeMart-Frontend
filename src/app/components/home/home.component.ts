@@ -87,6 +87,8 @@ export class HomeComponent implements OnInit {
     if (this.searchQuery.trim()) {
       this.selectedCategoryId = null;
       this.loadProducts();
+    } else {
+      this.clearFilters(); 
     }
   }
 
