@@ -49,5 +49,21 @@ export const routes: Routes = [
      path: 'orders',
      loadComponent: () => import('./components/order-history/order-history.component').then(m => m.OrderHistoryComponent)
    },
+   {
+    path: 'about-us',
+    loadComponent: () => import('./components/about-us/about-us.component').then(m => m.AboutUsComponent)
+  },
+  {
+    path: 'contact-us',
+    loadComponent: () => import('./components/contact-us/contact-us.component').then(m => m.ContactUsComponent)
+  },
+  {
+    path: 'faq',
+    loadComponent: () => import('./components/faq/faq.component').then(m => m.FaqComponent)
+  },
+  {
+    path: 'returns',
+    loadComponent: () => import('./components/returns/returns.component').then(m => m.ReturnsComponent)
+  },
   { path: '**', redirectTo: '' }
 ];
