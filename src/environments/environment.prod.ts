@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8080',
+  apiUrl: 'http://3.137.162.10:8080',
 };
+//test of dist folder for prod
